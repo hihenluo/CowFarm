@@ -2,6 +2,7 @@ import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { useEffect, useState } from "react";
 import CowFarmAbi from "../abis/CowFarm.json";
 import MilkAbi from "../abis/Milk.json";
+import { toast } from "react-hot-toast";
 
 const CowFarmAddress = "0x2d17B84d2C09C2ac8A8563aF42E415160dFc38df";
 const MilkTokenAddress = "0xa7d79f82E8Df39aC92B430552a718e4667FF95a8";
@@ -62,7 +63,7 @@ export function useCowFarm() {
       setMilkPerHour(Number(ratePerHour) * Number(cows));
       setLastUpdated(Date.now());
     } catch (err) {
-      console.error("Error fetching data:", err);
+      console.error("fetchData error", err);
     }
   }
 
@@ -74,45 +75,53 @@ export function useCowFarm() {
     const interval = setInterval(() => {
       const secondsPassed = (Date.now() - lastUpdated) / 1000;
       const additionalMilk = (milkPerHour / 3600) * secondsPassed;
-      setEstimatedMilk(prev => prev + additionalMilk);
+      setEstimatedMilk((prev) => prev + additionalMilk);
     }, 1000);
     return () => clearInterval(interval);
   }, [milkPerHour, lastUpdated]);
 
   async function claimFreeCow() {
     if (!walletClient || !address) return;
-    const sig = await walletClient.signMessage({
-      message: `Claiming free cow for ${address}`,
-    });
-    await walletClient.writeContract({
-      address: CowFarmAddress,
-      abi: CowFarmAbi,
-      functionName: "claimFreeCow",
-      args: [sig],
-    });
-    fetchData();
+    try {
+      const sig = await walletClient.signMessage({
+        message: `Claiming free cow for ${address}`,
+      });
+      await walletClient.writeContract({
+        address: CowFarmAddress,
+        abi: CowFarmAbi,
+        functionName: "claimFreeCow",
+        args: [sig],
+      });
+      fetchData();
+    } catch (error: any) {
+      if (error?.code === 4001) toast.error("❌ User cancelled transaction");
+      else toast.error("Failed to claim free cow");
+    }
   }
 
   async function claimMilk() {
     if (!walletClient) return;
-    await walletClient.writeContract({
-      address: CowFarmAddress,
-      abi: CowFarmAbi,
-      functionName: "claimMilk",
-    });
-    fetchData();
+    try {
+      await walletClient.writeContract({
+        address: CowFarmAddress,
+        abi: CowFarmAbi,
+        functionName: "claimMilk",
+      });
+      fetchData();
+    } catch (error: any) {
+      if (error?.code === 4001) toast.error("❌ User cancelled transaction");
+      else toast.error("Failed to claim milk");
+    }
   }
 
   async function buyCow(amount: number) {
     if (!walletClient || !address) return;
-
     try {
       const cowPrice = await publicClient.readContract({
         address: CowFarmAddress,
         abi: CowFarmAbi,
         functionName: "cowPrice",
       });
-
       const totalCost = BigInt(cowPrice) * BigInt(amount);
 
       const allowance = await publicClient.readContract({
@@ -137,22 +146,26 @@ export function useCowFarm() {
         functionName: "buyCow",
         args: [amount],
       });
-
       fetchData();
-    } catch (error) {
-      console.error("Error buying cow:", error);
+    } catch (error: any) {
+      if (error?.code === 4001) toast.error("❌ User cancelled transaction");
+      else toast.error("Failed to buy cow");
     }
   }
 
   async function registerReferralCode(code: string) {
     if (!walletClient || !address) return;
-    await walletClient.writeContract({
-      address: CowFarmAddress,
-      abi: CowFarmAbi,
-      functionName: "registerReferralCode",
-      args: [code],
-    });
-    fetchData();
+    try {
+      await walletClient.writeContract({
+        address: CowFarmAddress,
+        abi: CowFarmAbi,
+        functionName: "registerReferralCode",
+        args: [code],
+      });
+      fetchData();
+    } catch (error: any) {
+      toast.error("Failed to register referral code");
+    }
   }
 
   return {
