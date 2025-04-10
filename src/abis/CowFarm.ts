@@ -30,10 +30,14 @@ export const CowFarmAbi = [
     outputs: [],
   },
   {
-    name: 'claimFreeCow',
-    type: 'function',
-    stateMutability: 'nonpayable',
-    inputs: [{ name: 'signature', type: 'string' }],
+    name: "claimFreeCowWithFID",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "code", type: "string" },
+      { name: "fid", type: "uint256" },
+      { name: "signature", type: "bytes" }
+    ],
     outputs: [],
   },
   {
