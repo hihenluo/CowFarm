@@ -1,6 +1,5 @@
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { useEffect, useState } from "react";
-import { getAddress } from "viem";
 import CowFarmAbi from "../abis/CowFarm.json";
 import MilkAbi from "../abis/Milk.json";
 

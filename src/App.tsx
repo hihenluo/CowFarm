@@ -54,7 +54,7 @@ function App() {
   const handleClaimFreeCow = async () => {
     try {
       await claimFreeCow();
-      toast.success("🎁 Free cow claimed!");
+      toast.success("🎁 Free Cow claimed!");
     } catch (error: any) {
       toast.error(error?.message || "Failed to claim free cow");
     }
