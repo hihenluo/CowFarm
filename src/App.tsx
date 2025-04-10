@@ -30,6 +30,7 @@ function App() {
       await buyCow(1);
       toast.success("🐮 Bought a cow with $MILK!");
     } catch (error: any) {
+      console.error("🧨 buyCow error:", error);
       toast.error(error?.code === 4001 ? "❌ User cancelled transaction" : "Failed to buy cow");
     }
   };

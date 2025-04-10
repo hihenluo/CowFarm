@@ -23,13 +23,18 @@ export function useCowFarm() {
   async function fetchData() {
     if (!address) return;
     try {
-      const [cows, milk, claimed, code, ratePerHour] = await Promise.all([
-        Number(await publicClient.readContract({
-          address: CowFarmAddress,
-          abi: CowFarmAbi,
-          functionName: "getUserCowCount",
-          args: [address],
-        })),
+      console.log("📊 Address:", address);
+  
+      const cowsRaw = await publicClient.readContract({
+        address: CowFarmAddress,
+        abi: CowFarmAbi,
+        functionName: "getUserCowCount",
+        args: [address],
+      });
+  
+      console.log("🐄 Cow Count Raw:", cowsRaw);
+  
+      const [milk, claimed, code, ratePerHour] = await Promise.all([
         publicClient.readContract({
           address: CowFarmAddress,
           abi: CowFarmAbi,
@@ -54,22 +59,24 @@ export function useCowFarm() {
           functionName: "milkProductionPerHour",
         }),
       ]);
-
-      setCowCount(Number(cows));
+  
+      const cows = Number(cowsRaw);
+      setCowCount(cows);
       setMilkAmount(Number(milk));
       setEstimatedMilk(Number(milk));
       setHasClaimed(claimed as boolean);
       setReferralCode(code as string);
-      setMilkPerHour(Number(ratePerHour) * Number(cows));
+      setMilkPerHour(Number(ratePerHour) * cows);
       setLastUpdated(Date.now());
-
+  
       const codeExists = typeof code === "string" && code.length > 0;
-      const cowsOwned = Number(cows) > 0;
+      const cowsOwned = cows > 0;
       setCanGenerateReferral(cowsOwned && !codeExists);
     } catch (err) {
       console.error("fetchData error", err);
     }
   }
+  
 
   useEffect(() => {
     fetchData();
