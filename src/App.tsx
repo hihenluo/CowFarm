@@ -33,6 +33,33 @@ function App() {
     }
   }, [isConnected, hasClaimed, generated, registerReferralCode]);
 
+  const handleBuyCow = async () => {
+    try {
+      await buyCow(1); // otomatis handle approve + beli
+      toast.success("🐮 Bought a cow with $MILK!");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to buy cow");
+    }
+  };
+
+  const handleClaimMilk = async () => {
+    try {
+      await claimMilk();
+      toast.success("🥛 Milk claimed!");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to claim milk");
+    }
+  };
+
+  const handleClaimFreeCow = async () => {
+    try {
+      await claimFreeCow();
+      toast.success("🎁 Free cow claimed!");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to claim free cow");
+    }
+  };
+
   return (
     <div className="app-container">
       <Toaster position="top-center" />
@@ -52,36 +79,18 @@ function App() {
               </div>
             </div>
 
-            <button
-              className="farm-button milk"
-              onClick={() =>
-                claimMilk()
-                  .then(() => toast.success("🥛 Milk claimed!"))
-                  .catch(() => toast.error("Failed to claim milk"))
-              }
-            >
+            <button className="farm-button milk" onClick={handleClaimMilk}>
               🥛 Claim Milk
             </button>
 
-            <button
-              className="farm-button buy"
-              onClick={() =>
-                buyCow(1)
-                  .then(() => toast.success("🐮 Bought a cow with $MILK!"))
-                  .catch(() => toast.error("Failed to buy cow"))
-              }
-            >
+            <button className="farm-button buy" onClick={handleBuyCow}>
               🛒 Buy Cow
             </button>
 
             <button
               className="farm-button free"
               disabled={hasClaimed}
-              onClick={() =>
-                claimFreeCow()
-                  .then(() => toast.success("🎁 Free cow claimed!"))
-                  .catch(() => toast.error("Failed to claim free cow"))
-              }
+              onClick={handleClaimFreeCow}
             >
               🎁 Claim Free Cow
             </button>
