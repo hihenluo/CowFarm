@@ -21,7 +21,112 @@
   }
 }
 
-/* Button hover dan transisi */
+.app-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.farm-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.status-box {
+  background-color: #e0ccff;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  margin: 1rem 0;
+}
+
+.farm-button {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+}
+
+.farm-button.connect {
+  background-color: #d8b4fe;
+  color: #4b0082;
+}
+
+.farm-button.milk {
+  background-color: #ffe4e6;
+  color: #c026d3;
+}
+
+.farm-button.buy {
+  background-color: #bbf7d0;
+  color: #15803d;
+}
+
+.farm-button.free {
+  background-color: #fde68a;
+  color: #92400e;
+}
+
+.referral-box {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.label {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.referral-link {
+  background-color: #ddd6fe;
+  color: #4b0082;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  border: none;
+  font-size: 0.9rem;
+}
+
+.share-button {
+  background-color: #a78bfa;
+  color: white;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.copied-msg {
+  margin-top: 0.3rem;
+  font-size: 0.85rem;
+  color: green;
+}
+
+.connect-box {
+  background-color: #f5d0fe;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+}
+
 button {
   transition: all 0.2s ease-in-out;
 }

@@ -17,9 +17,14 @@ export function useCowFarm() {
   const [hasClaimed, setHasClaimed] = useState(false);
   const [referralCode, setReferralCode] = useState("");
 
+  const [estimatedMilk, setEstimatedMilk] = useState(0);
+  const [milkPerHour, setMilkPerHour] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState(Date.now());
+
+  // Fetch onchain data
   async function fetchData() {
     if (!address) return;
-    const [cows, milk, claimed, code] = await Promise.all([
+    const [cows, milk, claimed, code, ratePerHour] = await Promise.all([
       publicClient.readContract({
         address: CowFarmAddress,
         abi: CowFarmAbi,
@@ -44,12 +49,31 @@ export function useCowFarm() {
         functionName: "getReferralCode",
         args: [address],
       }),
+      publicClient.readContract({
+        address: CowFarmAddress,
+        abi: CowFarmAbi,
+        functionName: "milkProductionPerHour",
+      }),
     ]);
+
     setCowCount(Number(cows));
     setMilkAmount(Number(milk));
+    setEstimatedMilk(Number(milk));
     setHasClaimed(claimed);
     setReferralCode(code);
+    setMilkPerHour(Number(ratePerHour) * Number(cows));
+    setLastUpdated(Date.now());
   }
+
+  // Update estimated milk farming per second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const secondsPassed = (Date.now() - lastUpdated) / 1000;
+      const additionalMilk = (milkPerHour / 3600) * secondsPassed;
+      setEstimatedMilk(prev => prev + additionalMilk);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [milkPerHour, lastUpdated]);
 
   useEffect(() => {
     fetchData();
@@ -77,7 +101,7 @@ export function useCowFarm() {
     fetchData();
   }
 
-  async function buyCowWithMilk(amount) {
+  async function buyCowWithMilk(amount: number) {
     if (!walletClient || !address) return;
     const milkPrice = await publicClient.readContract({
       address: CowFarmAddress,
@@ -111,7 +135,7 @@ export function useCowFarm() {
     fetchData();
   }
 
-  async function registerReferralCode(code) {
+  async function registerReferralCode(code: string) {
     if (!walletClient || !address) return;
     await walletClient.writeContract({
       address: CowFarmAddress,
@@ -125,6 +149,8 @@ export function useCowFarm() {
   return {
     cowCount,
     milkAmount,
+    estimatedMilk,
+    milkPerHour,
     hasClaimed,
     claimFreeCow,
     claimMilk,

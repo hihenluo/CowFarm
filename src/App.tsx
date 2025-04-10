@@ -5,7 +5,7 @@ import { useCowFarm } from "./hooks/CowFarm";
 import { Toaster, toast } from "react-hot-toast";
 
 function App() {
-  const { isConnected, address } = useAccount();
+  const { isConnected } = useAccount();
   const {
     claimFreeCow,
     claimMilk,
@@ -14,11 +14,11 @@ function App() {
     milkAmount,
     hasClaimed,
     referralCode,
-    registerReferralCode
+    registerReferralCode,
   } = useCowFarm();
 
-  const [copied, setCopied] = useState(false);
   const generated = referralCode && referralCode.length > 0;
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     sdk.actions.ready();
@@ -34,67 +34,84 @@ function App() {
   }, [isConnected, hasClaimed, generated, registerReferralCode]);
 
   return (
-    <div className="min-h-screen bg-purple-100 text-purple-900 flex flex-col items-center p-6">
+    <div className="app-container">
       <Toaster position="top-center" />
-
-      <div className="bg-white rounded-2xl shadow-md w-full max-w-md p-4">
-        <h1 className="text-3xl font-bold text-center mb-4">🐮 Cow Farm Mini</h1>
+      <div className="farm-card">
+        <h1 className="title">🐮 Cow Farm</h1>
 
         <ConnectMenu />
 
         {isConnected && (
           <>
-            <div className="flex justify-between items-center my-4">
-              <div className="text-lg">🐄 Your Cows: {cowCount}</div>
-              <div className="text-lg">🥛 Milk: {milkAmount}</div>
+            <div className="status-box">
+              <div>
+                🐄 Cows: <strong>{cowCount}</strong>
+              </div>
+              <div>
+                🥛 Milk: <strong>{milkAmount}</strong>
+              </div>
             </div>
 
             <button
-              onClick={() => {
+              className="farm-button milk"
+              onClick={() =>
                 claimMilk()
                   .then(() => toast.success("🥛 Milk claimed!"))
-                  .catch(() => toast.error("Failed to claim milk"));
-              }}
-              className="w-full bg-purple-500 text-white font-semibold py-2 px-4 rounded-xl mb-2 hover:bg-purple-600"
+                  .catch(() => toast.error("Failed to claim milk"))
+              }
             >
               🥛 Claim Milk
             </button>
 
             <button
-              onClick={() => {
+              className="farm-button buy"
+              onClick={() =>
                 buyCowWithMilk(1)
-                  .then(() => toast.success("🐮 Cow bought with $MILK!"))
-                  .catch(() => toast.error("Failed to buy cow"));
-              }}
-              className="w-full bg-green-500 text-white font-semibold py-2 px-4 rounded-xl mb-2 hover:bg-green-600"
+                  .then(() => toast.success("🐮 Bought a cow with $MILK!"))
+                  .catch(() => toast.error("Failed to buy cow"))
+              }
             >
               🛒 Buy Cow with $MILK
             </button>
 
             <button
-              onClick={() => {
+              className="farm-button free"
+              disabled={hasClaimed}
+              onClick={() =>
                 claimFreeCow()
                   .then(() => toast.success("🎁 Free cow claimed!"))
-                  .catch(() => toast.error("Failed to claim free cow"));
-              }}
-              disabled={hasClaimed}
-              className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-xl mb-2 hover:bg-blue-600 disabled:opacity-50"
+                  .catch(() => toast.error("Failed to claim free cow"))
+              }
             >
               🎁 Claim Free Cow
             </button>
 
             {generated && (
-              <div className="mt-4 p-3 border border-purple-300 rounded-xl bg-purple-50 text-sm text-center">
-                <div className="mb-1 font-semibold">🔗 Your Referral Link:</div>
+              <div className="referral-box">
+                <div className="label">🔗 Your Referral Link:</div>
                 <button
-                  className="underline text-purple-600 hover:text-purple-800"
+                  className="referral-link"
                   onClick={() => {
-                    navigator.clipboard.writeText(`https://warpcast.com/~/add-cowfarm?ref=${referralCode}`);
+                    navigator.clipboard.writeText(
+                      `https://warpcast.com/~/add-cowfarm?ref=${referralCode}`
+                    );
                     setCopied(true);
                     toast.success("Referral link copied!");
+                    setTimeout(() => setCopied(false), 2000);
                   }}
                 >
                   https://warpcast.com/~/add-cowfarm?ref={referralCode}
+                </button>
+                {copied && <div className="copied-msg">✅ Copied!</div>}
+
+                <button
+                  className="share-button"
+                  onClick={() => {
+                    const url = `https://warpcast.com/~/compose?text=Join%20my%20Cow%20Farm%20🐮%20and%20get%20a%20free%20cow!%20https://warpcast.com/~/add-cowfarm?ref=${referralCode}`;
+                    window.open(url, "_blank");
+                  }}
+                >
+                  🔗 Share on Warpcast
                 </button>
               </div>
             )}
@@ -111,20 +128,19 @@ function ConnectMenu() {
 
   if (isConnected) {
     return (
-      <div className="text-sm text-center mt-2">
-        <div>Connected as:</div>
-        <div className="font-mono break-all">{address}</div>
+      <div className="connect-box">
+        <div className="text-xs">Connected as:</div>
+        <div className="text-sm font-mono break-all">{address}</div>
       </div>
     );
   }
 
   return (
     <button
-      type="button"
       onClick={() => connect({ connector: connectors[0] })}
-      className="w-full bg-yellow-400 text-black font-semibold py-2 px-4 rounded-xl mb-4 hover:bg-yellow-500"
+      className="farm-button connect"
     >
-      Connect Wallet
+      🔌 Connect Wallet
     </button>
   );
 }
