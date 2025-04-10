@@ -15,30 +15,22 @@ function App() {
     hasClaimed,
     referralCode,
     registerReferralCode,
+    canGenerateReferral,
   } = useCowFarm();
 
-  const generated = referralCode && referralCode.length > 0;
   const [copied, setCopied] = useState(false);
+  const generated = referralCode && referralCode.length > 0;
 
   useEffect(() => {
     sdk.actions.ready();
   }, []);
 
-  useEffect(() => {
-    if (isConnected && hasClaimed && !generated) {
-      const randomCode = `cow-${Math.random().toString(36).substring(2, 8)}`;
-      registerReferralCode(randomCode).catch(() => {
-        toast.error("Failed to generate referral code");
-      });
-    }
-  }, [isConnected, hasClaimed, generated, registerReferralCode]);
-
   const handleBuyCow = async () => {
     try {
-      await buyCow(1); // otomatis handle approve + beli
+      await buyCow(1);
       toast.success("🐮 Bought a cow with $MILK!");
     } catch (error: any) {
-      toast.error(error?.message || "Failed to buy cow");
+      toast.error(error?.code === 4001 ? "❌ User cancelled transaction" : "Failed to buy cow");
     }
   };
 
@@ -47,7 +39,7 @@ function App() {
       await claimMilk();
       toast.success("🥛 Milk claimed!");
     } catch (error: any) {
-      toast.error(error?.message || "Failed to claim milk");
+      toast.error(error?.code === 4001 ? "❌ User cancelled transaction" : "Failed to claim milk");
     }
   };
 
@@ -56,7 +48,17 @@ function App() {
       await claimFreeCow();
       toast.success("🎁 Free Cow claimed!");
     } catch (error: any) {
-      toast.error(error?.message || "Failed to claim free cow");
+      toast.error(error?.code === 4001 ? "❌ User cancelled transaction" : "Failed to claim free cow");
+    }
+  };
+
+  const handleGenerateReferral = async () => {
+    try {
+      const randomCode = `cow-${Math.random().toString(36).substring(2, 8)}`;
+      await registerReferralCode(randomCode);
+      toast.success("Referral code generated!");
+    } catch (error) {
+      toast.error("Failed to generate referral code");
     }
   };
 
@@ -65,18 +67,13 @@ function App() {
       <Toaster position="top-center" />
       <div className="farm-card">
         <h1 className="title">🐮 Cow Farm</h1>
-
         <ConnectMenu />
 
         {isConnected && (
           <>
             <div className="status-box">
-              <div>
-                🐄 Cows: <strong>{cowCount}</strong>
-              </div>
-              <div>
-                🥛 Milk: <strong>{milkAmount}</strong>
-              </div>
+              <div>🐄 Cows: <strong>{cowCount}</strong></div>
+              <div>🥛 Milk: <strong>{milkAmount}</strong></div>
             </div>
 
             <button className="farm-button milk" onClick={handleClaimMilk}>
@@ -87,13 +84,15 @@ function App() {
               🛒 Buy Cow
             </button>
 
-            <button
-              className="farm-button free"
-              disabled={hasClaimed}
-              onClick={handleClaimFreeCow}
-            >
+            <button className="farm-button free" disabled={hasClaimed} onClick={handleClaimFreeCow}>
               🎁 Claim Free Cow
             </button>
+
+            {canGenerateReferral && (
+              <button className="farm-button share" onClick={handleGenerateReferral}>
+                ✨ Generate Referral Code
+              </button>
+            )}
 
             {generated && (
               <div className="referral-box">
