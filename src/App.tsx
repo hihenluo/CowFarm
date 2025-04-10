@@ -9,7 +9,7 @@ function App() {
   const {
     claimFreeCow,
     claimMilk,
-    buyCowWithMilk,
+    buyCow,
     cowCount,
     milkAmount,
     hasClaimed,
@@ -66,12 +66,12 @@ function App() {
             <button
               className="farm-button buy"
               onClick={() =>
-                buyCowWithMilk(1)
+                buyCow(1)
                   .then(() => toast.success("🐮 Bought a cow with $MILK!"))
                   .catch(() => toast.error("Failed to buy cow"))
               }
             >
-              🛒 Buy Cow with $MILK
+              🛒 Buy Cow
             </button>
 
             <button
