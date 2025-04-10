@@ -1,7 +1,7 @@
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { useEffect, useState } from "react";
-import CowFarmAbi from "../abis/CowFarm.json";
-import MilkAbi from "../abis/Milk.json";
+import {CowFarmAbi} from "../abis/CowFarm";
+import { MilkAbi } from "../abis/Milk";
 
 const CowFarmAddress = "0x2d17B84d2C09C2ac8A8563aF42E415160dFc38df";
 const MilkTokenAddress = "0xa7d79f82E8Df39aC92B430552a718e4667FF95a8";
@@ -151,7 +151,7 @@ export function useCowFarm() {
       address: CowFarmAddress,
       abi: CowFarmAbi,
       functionName: "buyCow",
-      args: [amount],
+      args: [BigInt(amount)],
     });
   
    
