@@ -92,11 +92,12 @@ export function useCowFarm() {
   async function claimFreeCow(referralCode: string, fid: number) {
     if (!walletClient || !address) return;
 
-    const response = await fetch("/api/claim-sign", {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/claim-sign`, {
       method: "POST",
       body: JSON.stringify({ address, referralCode, fid }),
       headers: { "Content-Type": "application/json" },
     });
+    
 
     if (!response.ok) throw new Error("Failed to get signature from backend");
 
