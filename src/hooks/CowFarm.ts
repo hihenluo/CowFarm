@@ -13,7 +13,7 @@ export function useCowFarm() {
 
   const [cowCount, setCowCount] = useState(0);
   const [milkAmount, setMilkAmount] = useState(0);
-  const [hasClaimed, setHasClaimed] = useState(false);
+  const [hasClaimed, setHasClaimed] = useState<boolean>(false);
   const [referralCode, setReferralCode] = useState("");
   const [estimatedMilk, setEstimatedMilk] = useState(0);
   const [milkPerHour, setMilkPerHour] = useState(0);
@@ -24,12 +24,12 @@ export function useCowFarm() {
     if (!address) return;
     try {
       const [cows, milk, claimed, code, ratePerHour] = await Promise.all([
-        publicClient.readContract({
+        Number(await publicClient.readContract({
           address: CowFarmAddress,
           abi: CowFarmAbi,
           functionName: "getUserCowCount",
           args: [address],
-        }),
+        })),
         publicClient.readContract({
           address: CowFarmAddress,
           abi: CowFarmAbi,
@@ -58,8 +58,8 @@ export function useCowFarm() {
       setCowCount(Number(cows));
       setMilkAmount(Number(milk));
       setEstimatedMilk(Number(milk));
-      setHasClaimed(claimed);
-      setReferralCode(code);
+      setHasClaimed(claimed as boolean);
+      setReferralCode(code as string);
       setMilkPerHour(Number(ratePerHour) * Number(cows));
       setLastUpdated(Date.now());
 
@@ -115,7 +115,8 @@ export function useCowFarm() {
       address: CowFarmAddress,
       abi: CowFarmAbi,
       functionName: "cowPrice",
-    });
+    }) as bigint;
+    
     const totalCost = BigInt(cowPrice) * BigInt(amount);
 
     const allowance = await publicClient.readContract({
@@ -123,7 +124,8 @@ export function useCowFarm() {
       abi: MilkAbi,
       functionName: "allowance",
       args: [address, CowFarmAddress],
-    });
+    }) as bigint;
+    
 
     if (BigInt(allowance) < totalCost) {
       await walletClient.writeContract({
