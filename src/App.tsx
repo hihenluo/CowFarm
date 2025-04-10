@@ -126,11 +126,16 @@ function ConnectMenu() {
   const { isConnected, address } = useAccount();
   const { connect, connectors } = useConnect();
 
+  const shortenAddress = (addr: string) =>
+    addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "";
+
   if (isConnected) {
     return (
       <div className="connect-box">
         <div className="text-xs">Connected as:</div>
-        <div className="text-sm font-mono break-all">{address}</div>
+        <div className="text-sm font-mono break-all">
+          {shortenAddress(address!)}
+        </div>
       </div>
     );
   }
