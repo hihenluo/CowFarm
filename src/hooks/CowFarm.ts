@@ -1,11 +1,10 @@
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { useEffect, useState } from "react";
-import { parseEther } from "viem";
 import CowFarmAbi from "../abis/CowFarm.json";
 import MilkAbi from "../abis/Milk.json";
 
 const CowFarmAddress = "0x2d17B84d2C09C2ac8A8563aF42E415160dFc38df";
-const MilkTokenAddress = "0xA7D79f82E8Df39aC92B430552a718e4667FF95a8";
+const MilkTokenAddress = "0xa7d79f82E8Df39aC92B430552a718e4667FF95a8";
 
 export function useCowFarm() {
   const { address } = useAccount();
@@ -16,12 +15,10 @@ export function useCowFarm() {
   const [milkAmount, setMilkAmount] = useState(0);
   const [hasClaimed, setHasClaimed] = useState(false);
   const [referralCode, setReferralCode] = useState("");
-
   const [estimatedMilk, setEstimatedMilk] = useState(0);
   const [milkPerHour, setMilkPerHour] = useState(0);
   const [lastUpdated, setLastUpdated] = useState(Date.now());
 
-  // Fetch onchain data
   async function fetchData() {
     if (!address) return;
     const [cows, milk, claimed, code, ratePerHour] = await Promise.all([
@@ -65,7 +62,10 @@ export function useCowFarm() {
     setLastUpdated(Date.now());
   }
 
-  // Update estimated milk farming per second
+  useEffect(() => {
+    fetchData();
+  }, [address]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       const secondsPassed = (Date.now() - lastUpdated) / 1000;
@@ -75,13 +75,11 @@ export function useCowFarm() {
     return () => clearInterval(interval);
   }, [milkPerHour, lastUpdated]);
 
-  useEffect(() => {
-    fetchData();
-  }, [address]);
-
   async function claimFreeCow() {
     if (!walletClient || !address) return;
-    const sig = await walletClient.signMessage({ message: `Claiming free cow for ${address}` });
+    const sig = await walletClient.signMessage({
+      message: `Claiming free cow for ${address}`,
+    });
     await walletClient.writeContract({
       address: CowFarmAddress,
       abi: CowFarmAbi,
@@ -101,14 +99,16 @@ export function useCowFarm() {
     fetchData();
   }
 
-  async function buyCowWithMilk(amount: number) {
+  async function buyCow(amount: number) {
     if (!walletClient || !address) return;
-    const milkPrice = await publicClient.readContract({
+
+    const cowPrice = await publicClient.readContract({
       address: CowFarmAddress,
       abi: CowFarmAbi,
-      functionName: "milkPrice",
+      functionName: "cowPrice",
     });
-    const totalCost = BigInt(milkPrice) * BigInt(amount);
+
+    const totalCost = BigInt(cowPrice) * BigInt(amount);
 
     const allowance = await publicClient.readContract({
       address: MilkTokenAddress,
@@ -129,9 +129,10 @@ export function useCowFarm() {
     await walletClient.writeContract({
       address: CowFarmAddress,
       abi: CowFarmAbi,
-      functionName: "buyCowWithMilk",
+      functionName: "buyCow",
       args: [amount],
     });
+
     fetchData();
   }
 
@@ -154,7 +155,7 @@ export function useCowFarm() {
     hasClaimed,
     claimFreeCow,
     claimMilk,
-    buyCowWithMilk,
+    buyCow, // 
     referralCode,
     registerReferralCode,
   };
