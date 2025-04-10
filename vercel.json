@@ -1,8 +1,7 @@
 {
-    "functions": {
-      "api/claim-sign.ts": {
-        "runtime": "vercel-edge"
-      }
+  "functions": {
+    "api/claim-sign.ts": {
+      "runtime": "vercel-node@canary"
     }
   }
-  
+}
