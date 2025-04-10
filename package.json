@@ -13,9 +13,9 @@
     "@farcaster/frame-sdk": "latest",
     "@farcaster/frame-wagmi-connector": "latest",
     "@tanstack/react-query": "5.45.1",
-    "react-hot-toast": "^2.4.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hot-toast": "^2.4.0",
     "viem": "latest",
     "wagmi": "latest"
   },
@@ -23,6 +23,7 @@
     "@biomejs/biome": "^1.8.0",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.0",
+    "@vercel/node": "^5.1.14",
     "@vitejs/plugin-react": "^4.2.1",
     "@wagmi/cli": "latest",
     "typescript": "^5.4.5",

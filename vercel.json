@@ -1,0 +1,8 @@
+{
+    "functions": {
+      "api/claim-sign.ts": {
+        "runtime": "vercel-edge"
+      }
+    }
+  }
+  
