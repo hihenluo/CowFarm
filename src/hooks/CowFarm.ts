@@ -1,10 +1,12 @@
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { useEffect, useState } from "react";
+import { getAddress } from "viem";
 import {CowFarmAbi} from "../abis/CowFarm";
 import { MilkAbi } from "../abis/Milk";
 
-const CowFarmAddress = "0x2d17B84d2C09C2ac8A8563aF42E415160dFc38df";
-const MilkTokenAddress = "0xa7d79f82E8Df39aC92B430552a718e4667FF95a8";
+const CowFarmAddress = getAddress("0x2d17B84d2C09C2ac8A8563aF42E415160dFc38df");
+const MilkTokenAddress = getAddress("0xa7d79f82E8Df39aC92B430552a718e4667FF95a8");
+
 
 export function useCowFarm() {
   const { address } = useAccount();
@@ -16,66 +18,67 @@ export function useCowFarm() {
   const [hasClaimed, setHasClaimed] = useState<boolean>(false);
   const [referralCode, setReferralCode] = useState("");
   const [estimatedMilk, setEstimatedMilk] = useState(0);
-  const [milkPerHour, setMilkPerHour] = useState(0);
+  const [milkPerSecond, setMilkPerSecond] = useState(0); // untuk live farming
   const [lastUpdated, setLastUpdated] = useState(Date.now());
   const [canGenerateReferral, setCanGenerateReferral] = useState(false);
 
   async function fetchData() {
-    if (!address) return;
-    try {
-      console.log("📊 Address:", address);
-  
-      const cowsRaw = await publicClient.readContract({
-        address: CowFarmAddress,
-        abi: CowFarmAbi,
-        functionName: "getUserCowCount",
-        args: [address],
-      });
-  
-      console.log("🐄 Cow Count Raw:", cowsRaw);
-  
-      const [milk, claimed, code, ratePerHour] = await Promise.all([
-        publicClient.readContract({
-          address: CowFarmAddress,
-          abi: CowFarmAbi,
-          functionName: "getPendingMilk",
-          args: [address],
-        }),
-        publicClient.readContract({
-          address: CowFarmAddress,
-          abi: CowFarmAbi,
-          functionName: "hasClaimedFreeCow",
-          args: [address],
-        }),
-        publicClient.readContract({
-          address: CowFarmAddress,
-          abi: CowFarmAbi,
-          functionName: "getReferralCode",
-          args: [address],
-        }),
-        publicClient.readContract({
-          address: CowFarmAddress,
-          abi: CowFarmAbi,
-          functionName: "milkProductionPerHour",
-        }),
-      ]);
-  
-      const cows = Number(cowsRaw);
-      setCowCount(cows);
-      setMilkAmount(Number(milk));
-      setEstimatedMilk(Number(milk));
-      setHasClaimed(claimed as boolean);
-      setReferralCode(code as string);
-      setMilkPerHour(Number(ratePerHour) * cows);
-      setLastUpdated(Date.now());
-  
-      const codeExists = typeof code === "string" && code.length > 0;
-      const cowsOwned = cows > 0;
-      setCanGenerateReferral(cowsOwned && !codeExists);
-    } catch (err) {
-      console.error("fetchData error", err);
+   
+      if (!address) return;
+      try {
+        const [cowsRaw, milk, claimed, code, milkPerDay] = await Promise.all([
+          publicClient.readContract({
+            address: CowFarmAddress,
+            abi: CowFarmAbi,
+            functionName: "getUserCowCount",
+            args: [address],
+          }),
+          publicClient.readContract({
+            address: CowFarmAddress,
+            abi: CowFarmAbi,
+            functionName: "getPendingMilk",
+            args: [address],
+          }),
+          publicClient.readContract({
+            address: CowFarmAddress,
+            abi: CowFarmAbi,
+            functionName: "hasClaimedFreeCow",
+            args: [address],
+          }),
+          publicClient.readContract({
+            address: CowFarmAddress,
+            abi: CowFarmAbi,
+            functionName: "getReferralCode",
+            args: [address],
+          }),
+          publicClient.readContract({
+            address: CowFarmAddress,
+            abi: CowFarmAbi,
+            functionName: "milkPerDayPerCow",
+          }),
+        ]);
+    
+        const cowCount = Number(cowsRaw);
+        const milkAmountNum = Number(milk);
+        const milkPerSecondCalculated =
+          (Number(milkPerDay) / 86400) * cowCount; // 86400 = seconds in a day
+    
+        setCowCount(cowCount);
+        setMilkAmount(milkAmountNum);
+        setEstimatedMilk(milkAmountNum);
+        setHasClaimed(claimed as boolean);
+        setReferralCode(code as string);
+        setMilkPerSecond(milkPerSecondCalculated);
+        setLastUpdated(Date.now());
+    
+        const codeExists = typeof code === "string" && code.length > 0;
+        const cowsOwned = cowCount > 0;
+        setCanGenerateReferral(cowsOwned && !codeExists);
+      } catch (err) {
+        console.error("fetchData error", err);
+      }
     }
-  }
+    
   
 
   useEffect(() => {
@@ -85,11 +88,13 @@ export function useCowFarm() {
   useEffect(() => {
     const interval = setInterval(() => {
       const secondsPassed = (Date.now() - lastUpdated) / 1000;
-      const additionalMilk = (milkPerHour / 3600) * secondsPassed;
+      const additionalMilk = milkPerSecond * secondsPassed;
       setEstimatedMilk((prev) => prev + additionalMilk);
     }, 1000);
+  
     return () => clearInterval(interval);
-  }, [milkPerHour, lastUpdated]);
+  }, [milkPerSecond, lastUpdated]);
+  
 
   async function claimFreeCow() {
     if (!walletClient || !address) return;
@@ -174,7 +179,7 @@ export function useCowFarm() {
     cowCount,
     milkAmount,
     estimatedMilk,
-    milkPerHour,
+    setMilkPerSecond,
     hasClaimed,
     claimFreeCow,
     claimMilk,

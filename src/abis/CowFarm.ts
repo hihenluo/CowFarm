@@ -58,7 +58,7 @@ export const CowFarmAbi = [
     outputs: [{ type: 'string' }],
   },
   {
-    name: 'milkProductionPerHour',
+    name: 'milkPerDayPerCow',
     type: 'function',
     stateMutability: 'view',
     inputs: [],
