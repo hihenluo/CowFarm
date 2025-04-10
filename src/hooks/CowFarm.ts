@@ -1,10 +1,11 @@
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { useEffect, useState } from "react";
+import { getAddress } from "viem";
 import CowFarmAbi from "../abis/CowFarm.json";
 import MilkAbi from "../abis/Milk.json";
 
 const CowFarmAddress = "0x2d17B84d2C09C2ac8A8563aF42E415160dFc38df";
-const MilkTokenAddress = "0xa7d79f82E8Df39aC92B430552a718e4667FF95a8";
+const MilkTokenAddress = "0xa7d79f82E8Df39aC92b430552a718e4667FF95a8";
 
 export function useCowFarm() {
   const { address } = useAccount();
@@ -70,7 +71,7 @@ export function useCowFarm() {
     const interval = setInterval(() => {
       const secondsPassed = (Date.now() - lastUpdated) / 1000;
       const additionalMilk = (milkPerHour / 3600) * secondsPassed;
-      setEstimatedMilk(prev => prev + additionalMilk);
+      setEstimatedMilk((prev) => prev + additionalMilk);
     }, 1000);
     return () => clearInterval(interval);
   }, [milkPerHour, lastUpdated]);
@@ -110,11 +111,14 @@ export function useCowFarm() {
 
     const totalCost = BigInt(cowPrice) * BigInt(amount);
 
+    const userAddress = getAddress(address);
+    const spenderAddress = getAddress(CowFarmAddress);
+
     const allowance = await publicClient.readContract({
       address: MilkTokenAddress,
       abi: MilkAbi,
       functionName: "allowance",
-      args: [address, CowFarmAddress],
+      args: [userAddress, spenderAddress],
     });
 
     if (BigInt(allowance) < totalCost) {
@@ -122,7 +126,7 @@ export function useCowFarm() {
         address: MilkTokenAddress,
         abi: MilkAbi,
         functionName: "approve",
-        args: [CowFarmAddress, totalCost],
+        args: [spenderAddress, totalCost],
       });
     }
 
@@ -155,7 +159,7 @@ export function useCowFarm() {
     hasClaimed,
     claimFreeCow,
     claimMilk,
-    buyCow, // 
+    buyCow,
     referralCode,
     registerReferralCode,
   };
