@@ -110,40 +110,47 @@ export function useCowFarm() {
 
   async function buyCow(amount: number) {
     if (!walletClient || !address) return;
-
+  
     const cowPrice = await publicClient.readContract({
       address: CowFarmAddress,
       abi: CowFarmAbi,
       functionName: "cowPrice",
     }) as bigint;
-    
-    const totalCost = BigInt(cowPrice) * BigInt(amount);
-
+  
+    const totalCost = cowPrice * BigInt(amount);
+  
     const allowance = await publicClient.readContract({
       address: MilkTokenAddress,
       abi: MilkAbi,
       functionName: "allowance",
       args: [address, CowFarmAddress],
     }) as bigint;
-    
-
-    if (BigInt(allowance) < totalCost) {
+  
+    if (allowance < totalCost) {
+     
       await walletClient.writeContract({
         address: MilkTokenAddress,
         abi: MilkAbi,
         functionName: "approve",
         args: [CowFarmAddress, totalCost],
       });
+  
+      
+      await new Promise((res) => setTimeout(res, 4000));
     }
-
+  
+   
     await walletClient.writeContract({
       address: CowFarmAddress,
       abi: CowFarmAbi,
       functionName: "buyCow",
       args: [amount],
     });
+  
+   
     fetchData();
   }
+  
 
   async function registerReferralCode(code: string) {
     if (!walletClient || !address) return;
