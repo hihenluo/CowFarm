@@ -4,7 +4,7 @@ import CowFarmAbi from "../abis/CowFarm.json";
 import MilkAbi from "../abis/Milk.json";
 
 const CowFarmAddress = "0x2d17B84d2C09C2ac8A8563aF42E415160dFc38df";
-const MilkTokenAddress = "0xa7d79f82E8Df39aC92b430552a718e4667FF95a8";
+const MilkTokenAddress = "0xa7d79f82E8Df39aC92B430552a718e4667FF95a8";
 
 export function useCowFarm() {
   const { address } = useAccount();
@@ -62,7 +62,7 @@ export function useCowFarm() {
       setMilkPerHour(Number(ratePerHour) * Number(cows));
       setLastUpdated(Date.now());
     } catch (err) {
-      console.error("Failed to fetch farm data:", err);
+      console.error("Error fetching data:", err);
     }
   }
 
@@ -74,53 +74,39 @@ export function useCowFarm() {
     const interval = setInterval(() => {
       const secondsPassed = (Date.now() - lastUpdated) / 1000;
       const additionalMilk = (milkPerHour / 3600) * secondsPassed;
-      setEstimatedMilk((prev) => prev + additionalMilk);
+      setEstimatedMilk(prev => prev + additionalMilk);
     }, 1000);
     return () => clearInterval(interval);
   }, [milkPerHour, lastUpdated]);
 
   async function claimFreeCow() {
     if (!walletClient || !address) return;
-    try {
-      const sig = await walletClient.signMessage({
-        message: `Claiming free cow for ${address}`,
-      });
-
-      await walletClient.writeContract({
-        address: CowFarmAddress,
-        abi: CowFarmAbi,
-        functionName: "claimFreeCow",
-        args: [sig],
-      });
-
-      fetchData();
-    } catch (err) {
-      console.error("Failed to claim free cow:", err);
-    }
+    const sig = await walletClient.signMessage({
+      message: `Claiming free cow for ${address}`,
+    });
+    await walletClient.writeContract({
+      address: CowFarmAddress,
+      abi: CowFarmAbi,
+      functionName: "claimFreeCow",
+      args: [sig],
+    });
+    fetchData();
   }
 
   async function claimMilk() {
-    if (!walletClient || !address) return;
-    try {
-      await walletClient.writeContract({
-        address: CowFarmAddress,
-        abi: CowFarmAbi,
-        functionName: "claimMilk",
-      });
-
-      fetchData();
-    } catch (err) {
-      console.error("Failed to claim milk:", err);
-    }
+    if (!walletClient) return;
+    await walletClient.writeContract({
+      address: CowFarmAddress,
+      abi: CowFarmAbi,
+      functionName: "claimMilk",
+    });
+    fetchData();
   }
 
   async function buyCow(amount: number) {
     if (!walletClient || !address) return;
 
     try {
-      const userAddress = getAddress(address);
-      const spender = getAddress(CowFarmAddress);
-
       const cowPrice = await publicClient.readContract({
         address: CowFarmAddress,
         abi: CowFarmAbi,
@@ -133,7 +119,7 @@ export function useCowFarm() {
         address: MilkTokenAddress,
         abi: MilkAbi,
         functionName: "allowance",
-        args: [userAddress, spender],
+        args: [address, CowFarmAddress],
       });
 
       if (BigInt(allowance) < totalCost) {
@@ -141,7 +127,7 @@ export function useCowFarm() {
           address: MilkTokenAddress,
           abi: MilkAbi,
           functionName: "approve",
-          args: [spender, totalCost],
+          args: [CowFarmAddress, totalCost],
         });
       }
 
@@ -153,24 +139,20 @@ export function useCowFarm() {
       });
 
       fetchData();
-    } catch (err) {
-      console.error("Failed to buy cow:", err);
+    } catch (error) {
+      console.error("Error buying cow:", error);
     }
   }
 
   async function registerReferralCode(code: string) {
     if (!walletClient || !address) return;
-    try {
-      await walletClient.writeContract({
-        address: CowFarmAddress,
-        abi: CowFarmAbi,
-        functionName: "registerReferralCode",
-        args: [code],
-      });
-      fetchData();
-    } catch (err) {
-      console.error("Failed to register referral code:", err);
-    }
+    await walletClient.writeContract({
+      address: CowFarmAddress,
+      abi: CowFarmAbi,
+      functionName: "registerReferralCode",
+      args: [code],
+    });
+    fetchData();
   }
 
   return {
