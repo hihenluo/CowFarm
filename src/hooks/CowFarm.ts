@@ -27,7 +27,7 @@ export function useCowFarm() {
         publicClient.readContract({
           address: CowFarmAddress,
           abi: CowFarmAbi,
-          functionName: "getCowCount",
+          functionName: "getUserCowCount",
           args: [address],
         }),
         publicClient.readContract({

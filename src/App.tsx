@@ -18,7 +18,7 @@ function App() {
     canGenerateReferral,
   } = useCowFarm();
 
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<boolean>(false);
   const generated = referralCode && referralCode.length > 0;
 
   useEffect(() => {
