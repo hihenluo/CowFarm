@@ -101,9 +101,9 @@ function App() {
               🎁 Claim Free Cow
             </button>
 
-            {(canGenerateReferral || true) && (
+            {!generated && canGenerateReferral && (
               <button className="farm-button share" onClick={handleGenerateReferral}>
-                ✨ Generate Referral Code (Dev Test)
+                ✨ Generate Referral Code
               </button>
             )}
 
@@ -114,21 +114,21 @@ function App() {
                   className="referral-link"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      `https://warpcast.com/~/add-cowfarm?ref=${referralCode}`
+                      `https://cowminiapp.vercel.app/?ref=${referralCode}`
                     );
                     setCopied(true);
                     toast.success("Referral link copied!");
                     setTimeout(() => setCopied(false), 2000);
                   }}
                 >
-                  https://warpcast.com/~/add-cowfarm?ref={referralCode}
+                  https://cowminiapp.vercel.app/?ref={referralCode}
                 </button>
                 {copied && <div className="copied-msg">✅ Copied!</div>}
 
                 <button
                   className="share-button"
                   onClick={() => {
-                    const url = `https://warpcast.com/~/compose?text=Join%20my%20Cow%20Farm%20🐮%20and%20get%20a%20free%20cow!%20https://warpcast.com/~/add-cowfarm?ref=${referralCode}`;
+                    const url = `https://warpcast.com/~/compose?text=Join%20my%20Cow%20Farm%20🐮%20and%20get%20a%20free%20cow!%20https://cowminiapp.vercel.app/?ref=${referralCode}`;
                     window.open(url, "_blank");
                   }}
                 >
