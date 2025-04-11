@@ -14,20 +14,15 @@ export function useCowFarm() {
 
   const [cowCount, setCowCount] = useState(0);
   const [milkAmount, setMilkAmount] = useState(0);
-  const [hasClaimed, setHasClaimed] = useState<boolean>(false);
-  const [referralCode, setReferralCode] = useState("");
   const [estimatedMilk, setEstimatedMilk] = useState(0);
   const [milkPerSecond, setMilkPerSecond] = useState(0);
   const [lastUpdated, setLastUpdated] = useState(Date.now());
+  const [hasClaimed, setHasClaimed] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
   const [canGenerateReferral, setCanGenerateReferral] = useState(false);
 
   async function fetchData() {
-    if (!address || !publicClient) {
-      console.log("⏳ address atau publicClient belum siap");
-      return;
-    }
-
-    console.log("📡 Fetching data for address:", address);
+    if (!address || !publicClient) return;
 
     try {
       const [cowsRaw, milk, claimed, code, milkPerDay] = await Promise.all([
@@ -64,37 +59,33 @@ export function useCowFarm() {
 
       const cowCount = Number(cowsRaw);
       const milkAmountNum = Number(milk);
-      const milkPerSecondCalculated = (Number(milkPerDay) / 86400) * cowCount;
-
-      console.log("✅ Cow count fetched:", cowCount);
+      const milkPerSecondCalc = (Number(milkPerDay) / 86400) * cowCount;
 
       setCowCount(cowCount);
       setMilkAmount(milkAmountNum);
       setEstimatedMilk(milkAmountNum);
       setHasClaimed(claimed as boolean);
       setReferralCode(code as string);
-      setMilkPerSecond(milkPerSecondCalculated);
+      setMilkPerSecond(milkPerSecondCalc);
       setLastUpdated(Date.now());
 
-      const codeExists = typeof code === "string" && code !== "" && code !== "0x";
-      const cowsOwned = cowCount > 0;
-      setCanGenerateReferral(cowsOwned && !codeExists);
+      const codeStr = String(code || "").trim();
+      const codeExists = codeStr && codeStr !== "0x" && codeStr.length > 2;
+      setCanGenerateReferral(cowCount > 0 && !codeExists);
     } catch (err) {
-      console.error("❌ fetchData error", err);
+      console.error("❌ Error fetching data:", err);
     }
   }
 
   useEffect(() => {
-    if (address && publicClient) {
-      fetchData();
-    }
+    if (address && publicClient) fetchData();
   }, [address, publicClient]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       const secondsPassed = (Date.now() - lastUpdated) / 1000;
-      const additionalMilk = milkPerSecond * secondsPassed;
-      setEstimatedMilk((prev) => prev + additionalMilk);
+      const gain = milkPerSecond * secondsPassed;
+      setEstimatedMilk((prev) => prev + gain);
     }, 1000);
     return () => clearInterval(interval);
   }, [milkPerSecond, lastUpdated]);
@@ -119,7 +110,7 @@ export function useCowFarm() {
       args: [referralCode, BigInt(fid), signature],
     });
 
-    fetchData();
+    await fetchData();
   }
 
   async function claimMilk() {
@@ -129,7 +120,7 @@ export function useCowFarm() {
       abi: CowFarmAbi,
       functionName: "claimMilk",
     });
-    fetchData();
+    await fetchData();
   }
 
   async function buyCow(amount: number) {
@@ -167,7 +158,7 @@ export function useCowFarm() {
       args: [BigInt(amount)],
     });
 
-    fetchData();
+    await fetchData();
   }
 
   async function registerReferralCode(code: string) {
@@ -178,7 +169,7 @@ export function useCowFarm() {
       functionName: "registerReferralCode",
       args: [code],
     });
-    fetchData();
+    await fetchData();
   }
 
   return {
