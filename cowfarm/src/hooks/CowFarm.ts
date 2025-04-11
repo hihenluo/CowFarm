@@ -1,7 +1,7 @@
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { useEffect, useState } from "react";
 import { getAddress } from "viem";
-import { CowFarmAbi } from "../abis/CowFarm";
+import { CowFarmAbi } from "../abis/CowFarmABI";
 import { MilkAbi } from "../abis/Milk";
 
 const CowFarmAddress = getAddress("0x2d17B84d2C09C2ac8A8563aF42E415160dFc38df");
@@ -22,7 +22,13 @@ export function useCowFarm() {
   const [canGenerateReferral, setCanGenerateReferral] = useState(false);
 
   async function fetchData() {
-    if (!address) return;
+    if (!address || !publicClient) {
+      console.log("⏳ address atau publicClient belum siap");
+      return;
+    }
+
+    console.log("📡 Fetching data for address:", address);
+
     try {
       const [cowsRaw, milk, claimed, code, milkPerDay] = await Promise.all([
         publicClient.readContract({
@@ -60,6 +66,8 @@ export function useCowFarm() {
       const milkAmountNum = Number(milk);
       const milkPerSecondCalculated = (Number(milkPerDay) / 86400) * cowCount;
 
+      console.log("✅ Cow count fetched:", cowCount);
+
       setCowCount(cowCount);
       setMilkAmount(milkAmountNum);
       setEstimatedMilk(milkAmountNum);
@@ -72,13 +80,15 @@ export function useCowFarm() {
       const cowsOwned = cowCount > 0;
       setCanGenerateReferral(cowsOwned && !codeExists);
     } catch (err) {
-      console.error("fetchData error", err);
+      console.error("❌ fetchData error", err);
     }
   }
 
   useEffect(() => {
-    fetchData();
-  }, [address]);
+    if (address && publicClient) {
+      fetchData();
+    }
+  }, [address, publicClient]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -97,7 +107,6 @@ export function useCowFarm() {
       body: JSON.stringify({ address, referralCode, fid }),
       headers: { "Content-Type": "application/json" },
     });
-    
 
     if (!response.ok) throw new Error("Failed to get signature from backend");
 
@@ -184,5 +193,6 @@ export function useCowFarm() {
     referralCode,
     registerReferralCode,
     canGenerateReferral,
+    refresh: fetchData,
   };
 }

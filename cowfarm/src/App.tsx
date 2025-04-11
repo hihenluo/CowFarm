@@ -27,6 +27,12 @@ function App() {
     sdk.actions.ready();
   }, []);
 
+  useEffect(() => {
+    console.log("🐄 cowCount:", cowCount);
+    console.log("🔗 referralCode:", referralCode);
+    console.log("✨ canGenerateReferral:", canGenerateReferral);
+  }, [cowCount, referralCode, canGenerateReferral]);
+
   const handleBuyCow = async () => {
     try {
       await buyCow(1);
@@ -95,9 +101,9 @@ function App() {
               🎁 Claim Free Cow
             </button>
 
-            {canGenerateReferral && (
+            {(canGenerateReferral || true) && (
               <button className="farm-button share" onClick={handleGenerateReferral}>
-                ✨ Generate Referral Code
+                ✨ Generate Referral Code (Dev Test)
               </button>
             )}
 
