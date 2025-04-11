@@ -68,7 +68,7 @@ export function useCowFarm() {
       setMilkPerSecond(milkPerSecondCalculated);
       setLastUpdated(Date.now());
 
-      const codeExists = typeof code === "string" && code.length > 0 && code !== "0x";
+      const codeExists = typeof code === "string" && code !== "" && code !== "0x";
       const cowsOwned = cowCount > 0;
       setCanGenerateReferral(cowsOwned && !codeExists);
     } catch (err) {
