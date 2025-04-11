@@ -1,6 +1,6 @@
 import { sdk } from "@farcaster/frame-sdk";
 import { useEffect, useState } from "react";
-import { useAccount, useConnect } from "wagmi";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { useCowFarm } from "./hooks/CowFarm";
 import { useReferralAndFid } from "./hooks/useReferralAndFid";
 import { Toaster, toast } from "react-hot-toast";
@@ -140,17 +140,22 @@ function App() {
 function ConnectMenu() {
   const { isConnected, address } = useAccount();
   const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
 
   const shortenAddress = (addr: string) =>
     addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "";
 
   if (isConnected) {
     return (
-      <div className="connect-box">
+      <div className="connect-box text-center">
         <div className="text-xs">Connected as:</div>
-        <div className="text-sm font-mono break-all">
-          {shortenAddress(address!)}
-        </div>
+        <div className="text-sm font-mono mb-2">{shortenAddress(address!)}</div>
+        <button
+          onClick={() => disconnect()}
+          className="farm-button disconnect bg-red-500 hover:bg-red-600 text-white"
+        >
+          ❌ Disconnect
+        </button>
       </div>
     );
   }

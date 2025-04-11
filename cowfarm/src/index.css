@@ -90,6 +90,11 @@ body {
   background-color: #d8b4fe;
   color: var(--button-text);
 }
+.farm-button.disconnect {
+  background-color: #ef4444;
+  color: white;
+}
+
 
 .farm-button:disabled {
   opacity: 0.5;
