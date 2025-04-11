@@ -20,7 +20,7 @@ function App() {
   } = useCowFarm();
 
   const { referralCode: incomingReferral, fid } = useReferralAndFid();
-  const [copied, setCopied] = useState<boolean>(false);
+  const [copied, setCopied] = useState(false);
   const generated = referralCode && referralCode.length > 0;
 
   useEffect(() => {
@@ -38,8 +38,7 @@ function App() {
       await buyCow(1);
       toast.success("🐮 Bought a cow with $MILK!");
     } catch (error: any) {
-      console.error("🧨 buyCow error:", error);
-      toast.error(error?.code === 4001 ? "❌ User cancelled transaction" : "Failed to buy cow");
+      toast.error(error?.code === 4001 ? "❌ Cancelled" : "Failed to buy cow");
     }
   };
 
@@ -48,7 +47,7 @@ function App() {
       await claimMilk();
       toast.success("🥛 Milk claimed!");
     } catch (error: any) {
-      toast.error(error?.code === 4001 ? "❌ User cancelled transaction" : "Failed to claim milk");
+      toast.error(error?.code === 4001 ? "❌ Cancelled" : "Failed to claim milk");
     }
   };
 
@@ -61,7 +60,7 @@ function App() {
       await claimFreeCow(incomingReferral, fid);
       toast.success("🎁 Free Cow claimed!");
     } catch (error: any) {
-      toast.error(error?.code === 4001 ? "❌ User cancelled transaction" : "Failed to claim free cow");
+      toast.error(error?.code === 4001 ? "❌ Cancelled" : "Failed to claim free cow");
     }
   };
 
@@ -70,6 +69,7 @@ function App() {
       const randomCode = `cow-${Math.random().toString(36).substring(2, 8)}`;
       await registerReferralCode(randomCode);
       toast.success("Referral code generated!");
+      setTimeout(() => window.location.reload(), 1000); // refresh biar kode muncul
     } catch (error) {
       toast.error("Failed to generate referral code");
     }
@@ -101,7 +101,7 @@ function App() {
               🎁 Claim Free Cow
             </button>
 
-            {!generated && canGenerateReferral && (
+            {!generated && (
               <button className="farm-button share" onClick={handleGenerateReferral}>
                 ✨ Generate Referral Code
               </button>
@@ -114,21 +114,21 @@ function App() {
                   className="referral-link"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      `https://cowminiapp.vercel.app/?ref=${referralCode}`
+                      `https://cowminiapp.vercel.app?ref=${referralCode}`
                     );
                     setCopied(true);
                     toast.success("Referral link copied!");
                     setTimeout(() => setCopied(false), 2000);
                   }}
                 >
-                  https://cowminiapp.vercel.app/?ref={referralCode}
+                  https://cowminiapp.vercel.app?ref={referralCode}
                 </button>
                 {copied && <div className="copied-msg">✅ Copied!</div>}
 
                 <button
                   className="share-button"
                   onClick={() => {
-                    const url = `https://warpcast.com/~/compose?text=Join%20my%20Cow%20Farm%20🐮%20and%20get%20a%20free%20cow!%20https://cowminiapp.vercel.app/?ref=${referralCode}`;
+                    const url = `https://warpcast.com/~/compose?text=Join%20my%20Cow%20Farm%20🐮%20and%20get%20a%20free%20cow!%20https://cowminiapp.vercel.app?ref=${referralCode}`;
                     window.open(url, "_blank");
                   }}
                 >
