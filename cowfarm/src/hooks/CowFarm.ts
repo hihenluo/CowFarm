@@ -1,4 +1,11 @@
-// (semua import dan deklarasi awal tetap)
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
+ import { useEffect, useState } from "react";
+ import { getAddress } from "viem";
+ import { CowFarmAbi } from "../abis/CowFarmABI";
+ import { MilkAbi } from "../abis/Milk";
+ 
+ const CowFarmAddress = getAddress("0x2d17B84d2C09C2ac8A8563aF42E415160dFc38df");
+ const MilkTokenAddress = getAddress("0xa7d79f82E8Df39aC92B430552a718e4667FF95a8"); (semua import dan deklarasi awal tetap)
 
 export function useCowFarm() {
   const { address } = useAccount();
