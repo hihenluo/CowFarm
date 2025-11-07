@@ -14,7 +14,7 @@ contract CowFarm {
     address public owner;
     address public giveawayWallet;
     address public constant DEAD = address(0x000000000000000000000000000000000000dEaD);
-    address public signer; // signer backend
+    address public signer; 
 
     IERC20 public milkToken;
 
@@ -137,7 +137,6 @@ contract CowFarm {
 
     bytes32 messageHash = keccak256(abi.encodePacked(msg.sender, fid));
     
-    // Ini pengganti manual dari toEthSignedMessageHash()
     bytes32 ethSignedMessageHash = keccak256(
         abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash)
     );

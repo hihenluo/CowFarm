@@ -17,7 +17,7 @@ function App() {
     referralCode,
     registerReferralCode,
     canGenerateReferral,
-    refresh, // digunakan untuk update data setelah registrasi referral
+    refresh, 
   } = useCowFarm();
 
   const { referralCode: incomingReferral, fid } = useReferralAndFid();
@@ -65,7 +65,7 @@ function App() {
       const randomCode = `cow-${Math.random().toString(36).substring(2, 8)}`;
       await registerReferralCode(randomCode);
       toast.success("Referral code generated!");
-      await refresh(); // update referralCode dan cowCount setelah generate
+      await refresh(); 
     } catch (error) {
       toast.error("Failed to generate referral code");
     }

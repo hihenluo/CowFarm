@@ -9,7 +9,7 @@ contract milkToken is ERC20 {
     constructor(address devAddress) ERC20("milk Token", "MILK") {
         require(devAddress != address(0), "Invalid dev address");
 
-        // 100% langsung ke dev
+        
         _mint(devAddress, MAX_SUPPLY);
     }
 
