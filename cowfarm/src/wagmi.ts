@@ -1,18 +1,33 @@
-import { farcasterFrame } from "@farcaster/frame-wagmi-connector";
-import { http, createConfig } from "wagmi";
-import { base, mainnet } from "wagmi/chains";
+// wagmi.ts
 
-export const config = createConfig({
-  chains: [base, mainnet],
-  connectors: [farcasterFrame()],
-  transports: {
-    [base.id]: http(),
-    [mainnet.id]: http(),
-  },
+import { createAppKit } from "@reown/appkit/react";
+import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
+import { base } from "@reown/appkit/networks";
+
+const projectId = "cd169b99d42633d1d81f5aee613d0eed";
+
+export const wagmiAdapter = new WagmiAdapter({
+  projectId,
+  networks: [base],
+  ssr: true,
+  connectors: [],
 });
 
-declare module "wagmi" {
-  interface Register {
-    config: typeof config;
-  }
-}
+createAppKit({
+  adapters: [wagmiAdapter],
+  networks: [base],
+  projectId,
+  metadata: {
+    name: "Cow Farm",
+    description: "Cow Farm Game on base",
+    url: "https://example.xyz/",
+    icons: ["https://example.xyz//logo.png"],
+  },
+  features: {
+    history: false,
+    send: true,
+  },
+  themeMode: "dark",
+});
+
+export const config = wagmiAdapter.wagmiConfig;

@@ -1,14 +1,13 @@
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
- import { useEffect, useState } from "react";
- import { getAddress } from "viem";
- import { CowFarmAbi } from "../abis/CowFarmABI";
- import { MilkAbi } from "../abis/Milk";
- 
- const CowFarmAddress = getAddress("0x");
- const MilkTokenAddress = getAddress("0x"); 
+import { useEffect, useState } from "react";
+import { CowFarmAbi } from "../abis/CowFarmABI";
+import { MilkAbi } from "../abis/Milk";
+
+const CowFarmAddress = "0x0000000000000000000000000000000000000000";
+const MilkTokenAddress = "0x0000000000000000000000000000000000000000";
 
 export function useCowFarm() {
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
 
@@ -22,40 +21,64 @@ export function useCowFarm() {
   const [canGenerateReferral, setCanGenerateReferral] = useState(false);
 
   async function fetchData() {
-    if (!address || !publicClient) return;
+    if (!isConnected || !address || !publicClient) return;
 
     try {
       const [cowsRaw, milk, claimed, code, milkPerDay] = await Promise.all([
-        publicClient.readContract({ address: CowFarmAddress, abi: CowFarmAbi, functionName: "getUserCowCount", args: [address] }),
-        publicClient.readContract({ address: CowFarmAddress, abi: CowFarmAbi, functionName: "getPendingMilk", args: [address] }),
-        publicClient.readContract({ address: CowFarmAddress, abi: CowFarmAbi, functionName: "hasClaimedFreeCow", args: [address] }),
-        publicClient.readContract({ address: CowFarmAddress, abi: CowFarmAbi, functionName: "getReferralCode", args: [address] }),
-        publicClient.readContract({ address: CowFarmAddress, abi: CowFarmAbi, functionName: "milkPerDayPerCow" }),
+        publicClient.readContract({
+          address: CowFarmAddress,
+          abi: CowFarmAbi,
+          functionName: "getUserCowCount",
+          args: [address],
+        }),
+        publicClient.readContract({
+          address: CowFarmAddress,
+          abi: CowFarmAbi,
+          functionName: "getPendingMilk",
+          args: [address],
+        }),
+        publicClient.readContract({
+          address: CowFarmAddress,
+          abi: CowFarmAbi,
+          functionName: "hasClaimedFreeCow",
+          args: [address],
+        }),
+        publicClient.readContract({
+          address: CowFarmAddress,
+          abi: CowFarmAbi,
+          functionName: "getReferralCode",
+          args: [address],
+        }),
+        publicClient.readContract({
+          address: CowFarmAddress,
+          abi: CowFarmAbi,
+          functionName: "milkPerDayPerCow",
+        }),
       ]);
 
-      const cowCount = Number(cowsRaw);
+      const cowCountNum = Number(cowsRaw);
       const milkAmountNum = Number(milk);
-      const milkPerSecondCalculated = (Number(milkPerDay) / 86400) * cowCount;
+      const milkPerSecondCalc = (Number(milkPerDay) / 86400) * cowCountNum;
 
-      setCowCount(cowCount);
+      setCowCount(cowCountNum);
       setMilkAmount(milkAmountNum);
       setEstimatedMilk(milkAmountNum);
       setHasClaimed(claimed as boolean);
       setReferralCode(code as string);
-      setMilkPerSecond(milkPerSecondCalculated);
+      setMilkPerSecond(milkPerSecondCalc);
       setLastUpdated(Date.now());
 
       const codeExists = typeof code === "string" && code !== "" && code !== "0x";
-      const cowsOwned = cowCount > 0;
+      const cowsOwned = cowCountNum > 0;
       setCanGenerateReferral(cowsOwned && !codeExists);
     } catch (err) {
-      console.error("❌ fetchData error", err);
+      console.error("fetchData error", err);
     }
   }
 
   useEffect(() => {
-    if (address && publicClient) fetchData();
-  }, [address, publicClient]);
+    if (isConnected && address && publicClient) fetchData();
+  }, [isConnected, address, publicClient]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -76,7 +99,6 @@ export function useCowFarm() {
     });
 
     if (!response.ok) throw new Error("Failed to get signature from backend");
-
     const { signature } = await response.json();
 
     await walletClient.writeContract({
@@ -100,22 +122,22 @@ export function useCowFarm() {
   }
 
   async function buyCow(amount: number) {
-    if (!walletClient || !address) return;
+    if (!walletClient || !address || !publicClient) return;
 
-    const cowPrice = await publicClient.readContract({
+    const cowPrice = (await publicClient.readContract({
       address: CowFarmAddress,
       abi: CowFarmAbi,
       functionName: "cowPrice",
-    }) as bigint;
+    })) as bigint;
 
     const totalCost = cowPrice * BigInt(amount);
 
-    const allowance = await publicClient.readContract({
+    const allowance = (await publicClient.readContract({
       address: MilkTokenAddress,
       abi: MilkAbi,
       functionName: "allowance",
       args: [address, CowFarmAddress],
-    }) as bigint;
+    })) as bigint;
 
     if (allowance < totalCost) {
       await walletClient.writeContract({
@@ -145,8 +167,7 @@ export function useCowFarm() {
       functionName: "registerReferralCode",
       args: [code],
     });
-
-    await fetchData(); 
+    fetchData();
   }
 
   return {
