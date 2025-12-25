@@ -77,15 +77,17 @@ function App() {
   }
 
   return (
+
+    
     
     <div className="app-container">
       <Toaster position="top-center" />
-      <div className="farm-card">
-        <h1 className="title">🐮 Cow Farm</h1>
-          <div className="flex justify-center mt-6">
+      <div className="flex justify-end mt-6">
            <appkit-button />
         </div>
-
+      <div className="farm-card">
+        <h1 className="title">🐮 Cow Farm</h1>
+          
 
         
 
