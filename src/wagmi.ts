@@ -20,8 +20,8 @@ createAppKit({
   metadata: {
     name: "Cow Farm",
     description: "Cow Farm Game on base",
-    url: "https://example.xyz/",
-    icons: ["https://example.xyz//logo.png"],
+    url: "https://wecowfarm.xyz/",
+    icons: ["https://wecowfarm.xyz/logo.png"],
   },
   features: {
     history: false,
